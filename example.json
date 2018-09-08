@@ -1,0 +1,19 @@
+{
+    "text": "Home",
+    "edges": [
+        {
+        "weights": [
+            {
+            "type": "link_size",
+            "value": 43.55
+            }
+        ],
+        "endpoint": 
+            {
+            "text": "Second",
+            "edges": []
+            }   
+        }
+    ]
+}
+   
