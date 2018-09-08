@@ -59,7 +59,8 @@ class LinksSpider(scrapy.Spider):
         while nextLink is None and not self.seen.empty():
             next = self.seen.get()
             if next not in self.expanded:
-                nextLink = next
+                if not (next.endswith(".jpg") or next.endswith(".png") or next.endswith("pdf")):
+                    nextLink = next
 
         if nextLink is not None and self.counter < self.limit:
             self.current = nextLink
@@ -84,7 +85,7 @@ class LinksSpider(scrapy.Spider):
                 graph.append(entry)
             else:
                 for child in self.children[parent]:
-                    edge = (child, [])
+                    edge = (child, [1])
                     edges.append(edge)
             graph.append((parent, edges))
         graph.reverse()
