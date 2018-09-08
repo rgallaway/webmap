@@ -1,49 +1,33 @@
 import scrapy
 import Queue
-import sys
+import json
+
+# this is hackathon code; it will not be well documented or put together. please forgive me
 
 from scrapy.crawler import CrawlerProcess
-
-class Response():
-    def __init__(self, name, children, edge):
-        self.name = name
-        self.children = children.toList()
-
-class Edge():
-    def __init__(self, type, width):
-        self.type = type
-        self.width = width
-
-class Runner():
-    def __init__(self, startUrl, nodeLimit):
-        self.startUrl = startUrl
-        self.nodeLimit = nodeLimit
-
-    def run(self):
-        process = CrawlerProcess({
-            'USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
-        })
-
-        spiderboi = LinksSpider()
-        spiderboi.setStart(self.startUrl)
-        process.crawl(spiderboi)
-        process.start()
-
 
 class LinksSpider(scrapy.Spider):
     name = 'links'
     start_urls = [
         'https://www.homedepot.com/',
     ]
-    seen = Queue.Queue()  # all nodes we have seen
-    expanded = set()  # set of expanded nodes
-    children = {}  # dictionary of parents to set of children
 
-    seen.put(start_urls[0])
+    def __init__(self, start, edgeLimit, *args, **kwargs):
+        super(LinksSpider,self).__init__(*args, **kwargs)
+        self.start_urls[0] = start
+
+        self.seen = Queue.Queue()  # all nodes we have seen
+        self.expanded = []  # set of expanded nodes
+        self.children = {}  # dictionary of parents to set of children
+
+        self.current = self.start_urls[0]
+
+        self.seen.put(self.current)
+        self.limit = int(edgeLimit)
+        self.counter = 0
 
     def parse(self, response):
-        parent = response.url
-        self.expanded.add(parent)
+        self.expanded.append(self.current)
 
         lines = response.css('a::attr("href")')
 
@@ -58,16 +42,17 @@ class LinksSpider(scrapy.Spider):
             if link[:length] == (start):
                 link = link.replace(start, '')
                 link = '/' + link
-                #links.add(link)
+                links.add(link)
             if link[:1] == '/' and link[:2] != "//":
                 links.add(link)
 
         if '/' in links:
             links.remove('/')
 
-        self.children[parent] = links
+        self.children[self.current] = links
         for link in links:
             self.seen.put(link)
+            self.counter += 1
 
         nextLink = None
         while nextLink is None and not self.seen.empty():
@@ -75,14 +60,36 @@ class LinksSpider(scrapy.Spider):
             if next not in self.expanded:
                 nextLink = next
 
-        if nextLink is not None:
-            yield response.follow(nextLink, callback = self.parse)
+        if nextLink is not None and self.counter < self.limit:
+            self.current = nextLink
+            yield response.follow(nextLink, callback = self.parse, dont_filter=True)
 
 
     def closed(self, reason):
-        for x in self.children:
-            print x
-            print(self.children[x])
+
+        self.createStructure()
+
+    built = set()
+
+    def createStructure(self):
+        graph = []
+        for parent in self.expanded:
+            edges = []
+            if parent not in self.children.keys():
+                entry = (parent, edges)
+                graph.append(entry)
+            elif not len(self.children[parent]):
+                entry = (parent, edges)
+                graph.append(entry)
+            else:
+                for child in self.children[parent]:
+                    edge = (child, [])
+                    edges.append(edge)
+            graph.append((parent, edges))
+
+        with open('data.json', 'w') as outfile:
+            json.dump(graph, outfile)
+
 
     def cleanString(self, string):
         string = string.replace('https://', '')
@@ -94,9 +101,11 @@ class LinksSpider(scrapy.Spider):
     def setStart(self, string):
         self.start_urls[0] = string
 
+    def setLimit(self, limit):
+        self.limit = limit
 
-
-a = Runner('https://www.homedepot.com/', None)
-a.run()
+if __name__ == '__main__':
+    a = Runner('https://www.homedepot.com/', None)
+    print a.run()
 
 
