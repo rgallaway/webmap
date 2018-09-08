@@ -87,6 +87,7 @@ class LinksSpider(scrapy.Spider):
                     edge = (child, [])
                     edges.append(edge)
             graph.append((parent, edges))
+            graph = graph.reverse()
 
         with open('data.json', 'w') as outfile:
             json.dump(graph, outfile)
