@@ -116,7 +116,9 @@ class LinksSpider(scrapy.Spider):
                     edges.append(edge)
             graph.append((parent, edges))
 
-        return json.dumps(graph)
+        with open('data.json', 'w') as outfile:
+            json.dump(graph, outfile)
+
 
     def cleanString(self, string):
         string = string.replace('https://', '')
