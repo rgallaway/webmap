@@ -2,24 +2,26 @@ import constants
 from flask import Flask
 from flask import request
 from flask import send_file
+from flask import Response
+from scrapytest import Runner
 import json
+import subprocess
 app = Flask(__name__)
+app.debug = False
 
 @app.route('/test')
 def test_endpoint():
-    response = app.response_class(
-        response=json.dumps(constants.example),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
+    resp = Response(json.dumps(constants.example))
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.mimetype = 'application/json'
+    return resp
 
 @app.route('/map')
 def do_map():
     url = request.args.get('url', type=str)
     depth = request.args.get('depth', default=50, type=int)
     # Pass URL and depth to Ryan's scraper engine
-    return str.format('Map endpoint: {}, depth: {}', url, depth)
+    return subprocess.check_output(['scrapy', 'runspider', '-a', 'url=' + url, 'scrapytest.py'])
 
 @app.route('/')
 def index():

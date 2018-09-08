@@ -28,18 +28,21 @@ class Runner():
         spiderboi.setStart(self.startUrl)
         process.crawl(spiderboi)
         process.start()
+        return spiderboi.children
 
 
 class LinksSpider(scrapy.Spider):
     name = 'links'
-    start_urls = [
-        'https://www.homedepot.com/',
-    ]
-    seen = Queue.Queue()  # all nodes we have seen
-    expanded = set()  # set of expanded nodes
-    children = {}  # dictionary of parents to set of children
 
-    seen.put(start_urls[0])
+    def __init__(self, url=None, *args, **kwargs):
+        super(LinksSpider, self).__init__(*args, **kwargs)
+        self.start_urls = [url]
+
+        self.seen = Queue.Queue()  # all nodes we have seen
+        self.expanded = set()  # set of expanded nodes
+        self.children = {}  # dictionary of parents to set of children
+
+        self.seen.put(self.start_urls[0])
 
     def parse(self, response):
         parent = response.url
@@ -80,9 +83,7 @@ class LinksSpider(scrapy.Spider):
 
 
     def closed(self, reason):
-        for x in self.children:
-            print x
-            print(self.children[x])
+        print self.children
 
     def cleanString(self, string):
         string = string.replace('https://', '')
@@ -95,8 +96,8 @@ class LinksSpider(scrapy.Spider):
         self.start_urls[0] = string
 
 
-
-a = Runner('https://www.homedepot.com/', None)
-a.run()
+if __name__ == '__main__':
+    a = Runner('https://www.homedepot.com/', None)
+    print a.run()
 
 
