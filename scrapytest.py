@@ -1,6 +1,7 @@
 import scrapy
 import Queue
 import json
+import logging
 
 # this is hackathon code; it will not be well documented or put together. please forgive me
 
@@ -61,7 +62,7 @@ class LinksSpider(scrapy.Spider):
                 nextLink = next
 
         if nextLink is not None and self.counter < self.limit:
-            print self.counter, self.limit
+            logging.info('URL: ' + str(self.counter) + ' ' + ', limit: ' + str(self.limit))
             self.current = nextLink
             yield response.follow(nextLink, callback = self.parse, dont_filter=True)
 
