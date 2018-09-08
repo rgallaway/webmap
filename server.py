@@ -23,7 +23,7 @@ def do_map():
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.mimetype = 'application/json'
     # Pass URL and depth to Ryan's scraper engine
-    output = subprocess.check_output(['scrapy', 'runspider', '-a', 'start=' + url, '-a', 'edgeLimit=1000', 'scrapytest.py'])
+    output = subprocess.check_output(['python', '-m', 'scrapy', 'runspider', '-a', 'start=' + url, '-a', 'edgeLimit=1000', 'scrapytest.py'])
     with open("data.json", "r") as datafile:
         resp.set_data(datafile.read())
     return resp

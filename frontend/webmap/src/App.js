@@ -1,60 +1,21 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import './App.css';
 
 import { ForceGraph2D  } from 'react-force-graph';
+import 'whatwg-fetch';
+ 
+export class Landing extends React.Component {
+  render() {
+    return (
+    <div style={{display: 'flex',  justifyContent:'center', alignItems:'center', height: '50vh'}}>
+      <h1>Welcome to WebMap</h1><br />
+      <input type="text" />
+    </div>);
+  }
+}
 
-var example = {
-  text: "Home",
-  edges: [
-    {
-      weights: [],
-      endpoint: {
-        text: "Second",
-        edges: [
-          {
-            weights: [],
-            endpoint: {
-              text: "Third",
-              edges: [
-                {
-                  weights: [
-                    {
-                      type: "ALKDJFLSKDJ",
-                      value: 5
-                    }
-                  ],
-                  endpoint: {
-                    text: "Fourth",
-                    edges: []
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      weights: [],
-      endpoint: {
-        text: "Fourth",
-        edges: []
-      }
-    },
-    {
-      weights: [],
-      endpoint: {
-        text: "RIP RYAN LMFAO",
-        edges: []
-      }
-    }
-  ]
- }
- 
- 
- 
-
-class App extends React.Component {
+export class Graph extends React.Component {
 
   constructor(props) {
     super(props);
@@ -72,21 +33,28 @@ class App extends React.Component {
       ctx.textBaseline = 'middle'; 
       ctx.fillText(id, x, y - (r * 3));
     }
-    var linksMap = {};
-    const graph = this.readInGraph(example, linksMap);
     this.state = {
       customNodeCanvas: customNodeCanvas,
       textSize: textSize,
-      raw: example,
-      graph: graph,
-      linksMap: linksMap
+      dataLoaded: false
     };
   }
 
-  // componentDidMount() {
-  //   const graph = this.readInGraph(this.state.raw);
-  //   this.setState({graph: graph});
-  // }
+  componentDidMount() {
+    var linksMap = {};
+      fetch('http://localhost:5000/map?url=http://hytechracing.gatech.edu/&limit=1', {
+        method: 'GET',
+        'Content-Type': 'application/json'
+      })
+      .then(response => response.json())
+      .then(response => {
+        var processed = this.readInGraph(response, linksMap);
+        this.setState({
+          graph: processed, 
+          dataLoaded: true, 
+          linksMap: linksMap,});
+      });
+  }
 
   convertLinkToKey(source, target) {
     if (source.id != null) {
@@ -142,7 +110,8 @@ class App extends React.Component {
   }
 
   render() {
-    return (<div className="App">
+    return this.state.dataLoaded === false ? null : (
+    <div className="App">
       <ForceGraph2D
         graphData={this.state.graph}
         backgroundColor="#8a8a8a"
@@ -159,4 +128,12 @@ class App extends React.Component {
   }
 };
 
-export default App;
+
+export default function showLanding() {
+  //ReactDOM.render(<Landing />, document.getElementById('root'));
+  showGraph();
+}
+
+function showGraph() {
+  ReactDOM.render(<Graph />, document.getElementById('root'));
+}
