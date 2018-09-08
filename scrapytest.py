@@ -62,6 +62,7 @@ class LinksSpider(scrapy.Spider):
                 nextLink = next
 
         if nextLink is not None and self.counter < self.limit:
+            print self.counter, self.limit
             self.current = nextLink
             yield response.follow(nextLink, callback = self.parse, dont_filter=True)
 
@@ -87,7 +88,7 @@ class LinksSpider(scrapy.Spider):
                     edge = (child, [])
                     edges.append(edge)
             graph.append((parent, edges))
-            graph = graph.reverse()
+        graph.reverse()
 
         with open('data.json', 'w') as outfile:
             json.dump(graph, outfile)
