@@ -6,34 +6,6 @@ import json
 
 from scrapy.crawler import CrawlerProcess
 
-class Node():
-    def __init__(self, name, edges):
-        self.name = name
-        self.edges = edges
-
-    def getJson(self):
-        jsonEdges = []
-        for edge in self.edges:
-            jsonEdge = edge.getJson()
-            jsonEdges.append(jsonEdge)
-        return json.dumps({"name": self.name, "edges": jsonEdges})
-
-class Edge():
-    def __init__(self, weights,  node):
-        self.weights = weights
-        self.node = node
-
-    def getJson(self):
-        return json.dumps({"weights": self.weights, "node": self.node})
-
-class Weight():
-    def __init__(self, type, value):
-        self.type = type
-        self.value = value
-
-    def getJson(self):
-        return json.dumps({"type": self.type, "value": self.value})
-
 
 class LinksSpider(scrapy.Spider):
     name = 'links'
