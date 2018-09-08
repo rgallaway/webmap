@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
-import showLanding from './App';
+import showGraph from './App';
 
-showLanding();
+showGraph();
 
 registerServiceWorker();
