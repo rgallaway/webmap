@@ -62,7 +62,6 @@ class LinksSpider(scrapy.Spider):
                 nextLink = next
 
         if nextLink is not None and self.counter < self.limit:
-            print self.counter, self.limit
             self.current = nextLink
             yield response.follow(nextLink, callback = self.parse, dont_filter=True)
 
