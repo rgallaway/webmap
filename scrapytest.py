@@ -103,9 +103,3 @@ class LinksSpider(scrapy.Spider):
 
     def setLimit(self, limit):
         self.limit = limit
-
-if __name__ == '__main__':
-    a = Runner('https://www.homedepot.com/', None)
-    print a.run()
-
-
