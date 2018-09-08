@@ -1,4 +1,1 @@
-.center {
-  marginLeft: "auto";
-  marginRight: "auto";
-}
+.rowC{display:flex; flex-direction:row;}
