@@ -63,10 +63,7 @@ class LinksSpider(scrapy.Spider):
                     nextLink = next
 
         if nextLink is not None and self.counter < self.limit:
-<<<<<<< HEAD
             logging.info('URL: ' + str(self.counter) + ' ' + ', limit: ' + str(self.limit))
-=======
->>>>>>> Scrapy
             self.current = nextLink
             yield response.follow(nextLink, callback = self.parse, dont_filter=True)
 
