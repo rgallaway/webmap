@@ -19,7 +19,6 @@ def test_endpoint():
 def do_map():
     url = request.args.get('url', type=str)
     depth = request.args.get('limit', type=str)
-    print depth
     resp = Response()
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.mimetype = 'application/json'
@@ -27,6 +26,21 @@ def do_map():
     output = subprocess.check_output(['python', '-m', 'scrapy', 'runspider', '-a', 'start=' + url, '-a', 'edgeLimit=' + depth, 'scrapytest.py'])
     with open("data.json", "r") as datafile:
         resp.set_data(datafile.read())
+    return resp
+
+@app.route('/search')
+def search():
+    source_url = request.args.get('source', type=str)
+    dest_url = request.args.get('dest', type=str)
+    resp = Response()
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.mimetime = 'application/json'
+    # Pass source & dest URLs to search function
+    # Will return JSON of path between nodes
+    output = {}
+    output["source"] = source_url
+    output["dest"] = dest_url
+    resp.set_data(json.dumps(output))
     return resp
 
 @app.route('/')
