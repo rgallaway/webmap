@@ -18,12 +18,13 @@ def test_endpoint():
 @app.route('/map')
 def do_map():
     url = request.args.get('url', type=str)
-    depth = request.args.get('limit', type=int)
+    depth = request.args.get('limit', type=str)
+    print depth
     resp = Response()
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.mimetype = 'application/json'
     # Pass URL and depth to Ryan's scraper engine
-    output = subprocess.check_output(['python', '-m', 'scrapy', 'runspider', '-a', 'start=' + url, '-a', 'edgeLimit=1000', 'scrapytest.py'])
+    output = subprocess.check_output(['python', '-m', 'scrapy', 'runspider', '-a', 'start=' + url, '-a', 'edgeLimit=' + depth, 'scrapytest.py'])
     with open("data.json", "r") as datafile:
         resp.set_data(datafile.read())
     return resp
