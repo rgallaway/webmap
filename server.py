@@ -18,7 +18,7 @@ def test_endpoint():
 @app.route('/map')
 def do_map():
     url = request.args.get('url', type=str)
-    depth = request.args.get('depth', default=50, type=int)
+    depth = request.args.get('limit', type=int)
     resp = Response()
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.mimetype = 'application/json'
