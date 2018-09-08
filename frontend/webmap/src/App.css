@@ -1,0 +1,124 @@
+.graph__container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.graph {
+  background-color: steelblue;
+}
+
+.form-addSystem {
+  display: grid;
+  grid-template-columns: min-content min-content;
+  background-color: aliceblue;
+  padding-bottom: 15px;
+  margin-right: 10px;
+}
+
+.form-addSystem__header {
+  grid-column: 1/-1;
+  text-align: center;
+  margin: 1rem;
+  padding-bottom: 1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: steelblue;
+  border-bottom: 1px dotted steelblue;
+  font-family: cursive;
+}
+
+.form-addSystem__group {
+  display: grid;
+  margin: 0 1rem;
+  align-content: center;
+}
+
+.form-addSystem__input,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  outline: none;
+  border: none;
+  border-bottom: 3px solid teal;
+  padding: 1.5rem 2rem;
+  border-radius: 3px;
+  background-color: transparent;
+  color: steelblue;
+  transition: all .3s;
+  font-family: cursive;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-addSystem__input:focus {
+  outline: none;
+  background-color: platinum;
+  border-bottom: none;
+}
+
+.form-addSystem__input:focus:invalid {
+  border-bottom: 3px solid steelblue;
+}
+
+.form-addSystem__input::-webkit-input-placeholder {
+  color: steelblue;
+}
+
+.btnn {
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 10rem;
+  position: relative;
+  font-size: 12px;
+  height: 30px;
+  align-self: center;
+  background-color: cadetblue;
+  border: none;
+  color: aliceblue;
+  transition: all .2s;
+}
+
+.btnn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, .2)
+}
+
+.btnn:hover::after {
+  transform: scaleX(1.4) scaleY(1.6);
+  opacity: 0;
+}
+
+.btnn:active,
+.btnn:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .2);
+  outline: 0;
+}
+
+.form-addSystem__label {
+  color: lightgray;
+  font-size: 20px;
+  font-family: cursive;
+  font-weight: 700;
+  margin-left: 1.5rem;
+  margin-top: .7rem;
+  display: block;
+  transition: all .3s;
+}
+
+.form-addSystem__input:placeholder-shown+.form-addSystem__label {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4rem);
+}
+
+.form-addSystem__link {
+  grid-column: 2/4;
+  justify-self: center;
+  align-self: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: steelblue;
+}
