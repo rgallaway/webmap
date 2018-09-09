@@ -33,10 +33,10 @@ export class ConfigPanel extends React.Component {
 
   handle() {
     var self = this;
-    this.setState({loadingMessage: "Please wait while we prepare your graph..."})
+    this.setState({loadingMessage: "Please wait while we prepare your graph..."});
+    var e = this.state.external ? '1' : '0';
     this.state.handler.call(this.state.ref, this.state.url, 
-      this.state.limit, this.state.target, this.state.filter, function() {
-        console.log("Callback");
+      this.state.limit, this.state.target, this.state.filter, e, function() {
         self.setState({loadingMessage: ""});
       });       
   }
@@ -78,9 +78,10 @@ export class ConfigPanel extends React.Component {
                     onChange={this.setTargetChange.bind(this)}/>
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"target url"}</label></div>
         <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
-        <div><input type="checkbox" value={this.state.target} style={{width: "15px"}} 
+        <div><input type="checkbox" value={this.state.external} style={{width: "15px"}} 
                     onChange={this.setExternalChange.bind(this)}/>
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"allow external links"}</label></div>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
         <h3 style={{color: '#EEEEEE'}}>{"Now select your desired edge weights"}</h3>
         <form>
             <input type="radio" name="filter" value="none" checked={this.state.filter=='none'}
@@ -129,11 +130,11 @@ export class Graph extends React.Component {
     };
   }
 
-  changeUrl = function(url, limit, target, filter, callback) {
+  changeUrl = function(url, limit, target, filter, external, callback) {
     var linksMap = {};
     var nodesMap = {};
     var f = filter == 'none' ? '0' : '1';
-    fetch('http://localhost:5000/map?url=' + url + '&limit=' + limit + '&rand=' + f, {
+    fetch('http://localhost:5000/map?url=' + url + '&limit=' + limit + '&rand=' + f +"&external=" + external, {
       method: 'GET',
       'Content-Type': 'application/json'
     })
@@ -171,7 +172,7 @@ export class Graph extends React.Component {
   }
 
   componentDidMount() {
-    this.changeUrl('https://homedepot.com/', 1000, null, "none");
+    this.changeUrl('https://homedepot.com/', 1000, null, "none", "0");
   }
 
   convertLinkToKey(source, target) {
@@ -206,14 +207,17 @@ export class Graph extends React.Component {
       var text = curr[0];
       if (!seenNodes.has(text)) {
         var color = first ? '#00FF00' : "#ee7125";
+        if (color == '##ee7125' && text.substring(0, 4) == 'http') {
+          color = "#0000FF";
+        }
         if (searchNodes != null && searchNodes.indexOf(text) >= 0) {
           var i = searchNodes.indexOf(text);
           if (i == 0) {
             color = '#00FF00';
           } else if (i == searchNodes.length - 1) {
-            color = '#FF0000';
+            color = '#FFFFFF';
           } else {
-            color = '#0000FF';
+            color = '#FFFF00';
           }
         }
         nodes.push( { 
@@ -230,12 +234,15 @@ export class Graph extends React.Component {
         var e = edges[i];
         if (!seenNodes.has(e[0])) {
           var color = "#ee7125";
+          if (e[0].substring(0, 4) == 'http') {
+            color = "#0000FF";
+          }
           if (searchNodes != null && searchNodes.indexOf(e[0]) >= 0) {
             var i = searchNodes.indexOf(e[0]);
             if (i == 0) {
               color = '#00FF00';
             } else if (i == searchNodes.length - 1) {
-              color = '#FF0000';
+              color = '#FFFFFF';
             } else {
               color = '#FFFF00';
             }
@@ -275,7 +282,7 @@ export class Graph extends React.Component {
 
   render() {
     return this.state.dataLoaded === false ? null : (
-    <div className="App">
+    <div style = {{backgroundColor:"#8a8a8a"}} className="App">
       <Header />
       <div style={{display:"flex", flexDirection: "row"}}> 
         <ConfigPanel 
