@@ -2,6 +2,8 @@ import scrapy
 import Queue
 import json
 import logging
+from random import randint
+
 
 # this is hackathon code; it will not be well documented or put together. please forgive me
 
@@ -13,7 +15,7 @@ class LinksSpider(scrapy.Spider):
         'https://www.homedepot.com/',
     ]
 
-    def __init__(self, start, edgeLimit, *args, **kwargs):
+    def __init__(self, start, edgeLimit, rand, *args, **kwargs):
         super(LinksSpider,self).__init__(*args, **kwargs)
         self.start_urls[0] = start
 
@@ -26,6 +28,7 @@ class LinksSpider(scrapy.Spider):
         self.seen.put(self.current)
         self.limit = int(edgeLimit)
         self.counter = 0
+        self.rand = int(rand)
 
     def parse(self, response):
         self.expanded.append(self.current)
@@ -86,7 +89,10 @@ class LinksSpider(scrapy.Spider):
                 graph.append(entry)
             else:
                 for child in self.children[parent]:
-                    edge = (child, [1])
+                    if self.rand:
+                        edge = (child, [randint(1,5)])
+                    else:
+                        edge = (child, [1])
                     edges.append(edge)
             graph.append((parent, edges))
         graph.reverse()
