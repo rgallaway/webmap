@@ -24,12 +24,21 @@ export class ConfigPanel extends React.Component {
     super(props);
     this.state = {url: "https://homedepot.com/", 
       limit: 1000,
+      target: "",
       handler: props.updateHandler,
-      ref: props.reference};
+      filter: "none",
+      ref: props.reference,
+      loadingMessage: ""};
   }
 
   handle() {
-    this.state.handler.call(this.state.ref, this.state.url, this.state.limit);
+    var self = this;
+    this.setState({loadingMessage: "Please wait while we prepare your graph..."})
+    this.state.handler.call(this.state.ref, this.state.url, 
+      this.state.limit, this.state.target, this.state.filter, function() {
+        console.log("Callback");
+        self.setState({loadingMessage: ""});
+      });       
   }
 
   setUrlChange(e) {
@@ -38,6 +47,14 @@ export class ConfigPanel extends React.Component {
 
   setLimitChange(e) {
     this.setState({limit: e.target.value});
+  }
+
+  setTargetChange(e) {
+    this.setState({target: e.target.value});
+  }
+
+  setFilterChange(e) {
+    this.setState({filter: e.target.value});
   }
 
   render() {
@@ -51,8 +68,25 @@ export class ConfigPanel extends React.Component {
         <div><input type="number" value={this.state.limit} style={{width: "150px"}} 
                     onChange={this.setLimitChange.bind(this)}/>
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"# of edges"}</label></div>
-        <div style={{display: 'flex', justifyContent: 'center', padding: '20px'}}>
-        <button onClick={this.handle.bind(this)}>Update</button></div>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
+
+        <div><input type="text" value={this.state.target} style={{width: "150px"}} 
+                    onChange={this.setTargetChange.bind(this)}/>
+          <label style={{color: '#DDDDDD', padding: '5px'}}>{"target url"}</label></div>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
+        <h3 style={{color: '#EEEEEE'}}>{"Now select your desired edge weights"}</h3>
+        <form>
+            <input type="radio" name="filter" value="none" checked={this.state.filter=='none'}
+                    onChange={this.setFilterChange.bind(this)} />
+            <label style={{color: '#DDDDDD', padding: '5px'}}>None (Uniform)</label><br />
+            <input type="radio" name="filter" value="access" checked={this.state.filter=='access'}
+                    onChange={this.setFilterChange.bind(this)} />
+            <label style={{color: '#DDDDDD', padding: '5px'}}> User Access Rate</label><br />
+          </form>
+          <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
+        <button onClick={this.handle.bind(this)}>Update</button>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '50px'}}></div>
+        <h4 style={{color: '#AAAA00'}}>{this.state.loadingMessage}</h4>
       </div>
     )
   }
@@ -68,7 +102,7 @@ export class Graph extends React.Component {
       const r = 3;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, 2 * Math.PI, false);
-      ctx.fillStyle = '#ee7125';
+      ctx.fillStyle = this.state.nodesMap[id].color;
       ctx.fill();
       // ctx.fillStyle = "#EEEEEE"
       // ctx.font = textSize + 'px Sans-Serif'; 
@@ -88,25 +122,49 @@ export class Graph extends React.Component {
     };
   }
 
-  changeUrl = function(url, limit) {
-    console.log(this);
+  changeUrl = function(url, limit, target, filter, callback) {
     var linksMap = {};
-    fetch('http://localhost:5000/map?url=' + url + '&limit=' + limit, {
+    var nodesMap = {};
+    var f = filter == 'none' ? '0' : '1';
+    fetch('http://localhost:5000/map?url=' + url + '&limit=' + limit + '&rand=' + f, {
       method: 'GET',
       'Content-Type': 'application/json'
     })
     .then(response => response.json())
     .then(response => {
-      var processed = this.readInGraph(response, linksMap);
-      this.setState({
-        graph: processed, 
-        dataLoaded: true, 
-        linksMap: linksMap,});
+      if (target != null && target != '') {
+        fetch('http://localhost:5000/search?source=' + url + '&dest=' + target, {
+          method: 'GET',
+          'Content-Type': 'application/json'
+        })
+        .then(sresponse => sresponse.json())
+        .then(sresponse => {
+          var processed = this.readInGraph(response, linksMap, nodesMap, sresponse);
+          this.setState({
+            graph: processed, 
+            dataLoaded: true, 
+            linksMap: linksMap,
+            nodesMap: nodesMap});
+            if (callback != null) {
+              callback();
+            }
+        });
+      } else {
+        var processed = this.readInGraph(response, linksMap, nodesMap, null);
+        this.setState({
+          graph: processed, 
+          dataLoaded: true, 
+          linksMap: linksMap,
+          nodesMap: nodesMap});
+          if (callback != null) {
+            callback();
+          }
+      }
     });
   }
 
   componentDidMount() {
-    this.changeUrl('https://homedepot.com/', 1000);
+    this.changeUrl('https://homedepot.com/', 1000, null, "none");
   }
 
   convertLinkToKey(source, target) {
@@ -127,42 +185,70 @@ export class Graph extends React.Component {
   }
 
   getLinkArrowLength = function(l) {
-    return this.getLinkWidth(l) * 2;
+    return this.getLinkWidth(l) * 4;
   }
 
-  readInGraph(data, linksMap) {
+  readInGraph(data, linksMap, nodesMap, searchNodes) {
     var seenNodes = new Set();
     var nodes = [];
     var links = [];
     var notSeen = data;
+    var first = true;
     while (notSeen.length != 0) {
       var curr = notSeen.pop();
       var text = curr[0];
       if (!seenNodes.has(text)) {
+        var color = first ? '#00FF00' : "#ee7125";
+        if (searchNodes != null && searchNodes.indexOf(text) >= 0) {
+          var i = searchNodes.indexOf(text);
+          if (i == 0) {
+            color = '#00FF00';
+          } else if (i == searchNodes.length - 1) {
+            color = '#FF0000';
+          } else {
+            color = '#0000FF';
+          }
+        }
         nodes.push( { 
           id: text, 
           name: text, 
           value: 10,
-          color: "#ee7125" } 
+          color: color} 
         );
+        first = false;
         seenNodes.add(text);
       }
       var edges = curr[1];
       for (var i = 0; i < edges.length; i++) {
         var e = edges[i];
         if (!seenNodes.has(e[0])) {
+          var color = "#ee7125";
+          if (searchNodes != null && searchNodes.indexOf(e[0]) >= 0) {
+            var i = searchNodes.indexOf(e[0]);
+            if (i == 0) {
+              color = '#00FF00';
+            } else if (i == searchNodes.length - 1) {
+              color = '#FF0000';
+            } else {
+              color = '#FFFF00';
+            }
+          }
           nodes.push( { 
             id: e[0], 
             value: 10,
             name: e[0], 
-            color: "#ee7125" } 
+            color: color } 
           );
           seenNodes.add(e[0]);
+        }
+        var linkColor = '#000000';
+        if (searchNodes != null && searchNodes.indexOf(e[0]) >= 0 && searchNodes.indexOf(text) >= 0) {
+          linkColor = "#00FFFF"
         }
         links.push( {
           source: text, 
           target: e[0], 
-          color: "#000000",
+          color: linkColor,
           width: e[1][0] == null ? 1 : e[1][0]
         } )
       }
@@ -170,6 +256,10 @@ export class Graph extends React.Component {
     for (var i = 0; i < links.length; i++) {
       var l = links[i];
       linksMap[this.convertLinkToKey(l.source, l.target)] = l;
+    }
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      nodesMap[n.id] = n;
     }
     return {
       nodes: nodes, links: links
@@ -190,7 +280,6 @@ export class Graph extends React.Component {
           backgroundColor="#8a8a8a"
           linkDirectionalArrowLength={(l) => this.getLinkArrowLength(l)}
           linkDirectionalArrowRelPos={0.8}
-          nodeVal={3}
           nodeCanvasObject={this.state.customNodeCanvas}
           cooldownTicks={0}
           warmupTicks={150}
