@@ -78,9 +78,6 @@ export class ConfigPanel extends React.Component {
                     onChange={this.setTargetChange.bind(this)}/>
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"target url"}</label></div>
         <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
-        <div><input type="checkbox" value={this.state.target} style={{width: "15px"}} 
-                    onChange={this.setExternalChange.bind(this)}/>
-          <label style={{color: '#DDDDDD', padding: '5px'}}>{"allow external links"}</label></div>
         <h3 style={{color: '#EEEEEE'}}>{"Now select your desired edge weights"}</h3>
         <form>
             <input type="radio" name="filter" value="none" checked={this.state.filter=='none'}
@@ -211,9 +208,9 @@ export class Graph extends React.Component {
           if (i == 0) {
             color = '#00FF00';
           } else if (i == searchNodes.length - 1) {
-            color = '#FF0000';
+            color = '#FFFFFF';
           } else {
-            color = '#0000FF';
+            color = '#FFFF00';
           }
         }
         nodes.push( { 
@@ -235,7 +232,7 @@ export class Graph extends React.Component {
             if (i == 0) {
               color = '#00FF00';
             } else if (i == searchNodes.length - 1) {
-              color = '#FF0000';
+              color = '#FFFFFF';
             } else {
               color = '#FFFF00';
             }
