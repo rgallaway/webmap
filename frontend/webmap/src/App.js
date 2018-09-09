@@ -58,7 +58,7 @@ export class ConfigPanel extends React.Component {
   }
 
   setExternalChange(e) {
-    this.setState({external: e.target.value});
+    this.setState({external: e.target.checked});
   }
 
   render() {
