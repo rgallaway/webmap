@@ -4,10 +4,7 @@ import json
 import logging
 from random import randint
 
-
 # this is hackathon code; it will not be well documented or put together. please forgive me
-
-from scrapy.crawler import CrawlerProcess
 
 class LinksSpider(scrapy.Spider):
     name = 'links'
@@ -15,7 +12,7 @@ class LinksSpider(scrapy.Spider):
         'https://www.homedepot.com/',
     ]
 
-    def __init__(self, start, edgeLimit, rand, *args, **kwargs):
+    def __init__(self, start, edgeLimit, rand, external, *args, **kwargs):
         super(LinksSpider,self).__init__(*args, **kwargs)
         self.start_urls[0] = start
 
@@ -29,6 +26,7 @@ class LinksSpider(scrapy.Spider):
         self.limit = int(edgeLimit)
         self.counter = 0
         self.rand = int(rand)
+        self.external = int(external)
 
     def parse(self, response):
         self.expanded.append(self.current)
@@ -47,7 +45,9 @@ class LinksSpider(scrapy.Spider):
                 link = link.replace(start, '')
                 link = '/' + link
                 links.add(link)
-            if link[:1] == '/' and link[:2] != "//":
+            if self.external and link[:2] != "//":
+                links.add(link)
+            elif not self.external and link[:1] == '/' and link[:2] != "//":
                 links.add(link)
 
         if '/' in links:
@@ -62,8 +62,10 @@ class LinksSpider(scrapy.Spider):
         while nextLink is None and not self.seen.empty():
             next = self.seen.get()
             if next not in self.expanded:
-                if not (next.endswith(".jpg") or next.endswith(".png") or next.endswith("pdf")):
+                if self.external and not (next.endswith(".jpg") or next.endswith(".png") or next.endswith("pdf") or next.startswith("http") or next.startswith("javascript")):
                     nextLink = next
+                elif not self.external and not (next.endswith(".jpg") or next.endswith(".png") or next.endswith("pdf")):
+                    nextLink = next 
 
         if nextLink is not None and self.counter < self.limit:
             logging.info('URL: ' + str(self.counter) + ' ' + ', limit: ' + str(self.limit))
@@ -72,7 +74,6 @@ class LinksSpider(scrapy.Spider):
 
 
     def closed(self, reason):
-
         self.createStructure()
 
     built = set()
@@ -102,10 +103,11 @@ class LinksSpider(scrapy.Spider):
 
 
     def cleanString(self, string):
-        string = string.replace('https://', '')
-        string = string.replace('http://', '')
-        string = string.replace('//www.', '')
-        string = string.replace('www.', '')
+        if not self.external or (self.external and self.start_urls[0] in string[:len(self.start_urls[0])]):
+            string = string.replace('https://', '')
+            string = string.replace('http://', '')
+            string = string.replace('//www.', '')
+            string = string.replace('www.', '')
         return string
 
     def setStart(self, string):

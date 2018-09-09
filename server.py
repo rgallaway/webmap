@@ -21,11 +21,17 @@ def do_map():
     url = request.args.get('url', type=str)
     depth = request.args.get('limit', default='100', type=str)
     rand = request.args.get('rand', default='0', type=str)
+    external = request.args.get('external', default='0', type=str)
     resp = Response()
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.mimetype = 'application/json'
     # Pass URL and depth to Ryan's scraper engine
-    output = subprocess.check_output(['python', '-m', 'scrapy', 'runspider', '-a', 'start=' + url, '-a', 'edgeLimit=' + depth, '-a', 'rand=' + rand, 'scrapytest.py'])
+    output = subprocess.check_output(['python', '-m', 'scrapy', 'runspider', \
+                                        '-a', 'start=' + url, \
+                                        '-a', 'edgeLimit=' + depth, \
+                                        '-a', 'rand=' + rand, \
+                                        '-a', 'external=' + external, \
+                                        'scrapytest.py'])
     with open("data.json", "r") as datafile:
         resp.set_data(datafile.read())
     return resp

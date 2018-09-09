@@ -58,7 +58,11 @@ export class ConfigPanel extends React.Component {
   }
 
   setExternalChange(e) {
+<<<<<<< HEAD
     this.setState({external: e.target.value});
+=======
+    this.setState({external: e.target.checked});
+>>>>>>> external
   }
 
   render() {
@@ -79,7 +83,7 @@ export class ConfigPanel extends React.Component {
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"target url"}</label></div>
         <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
         <div><input type="checkbox" value={this.state.external} style={{width: "15px"}} 
-                    onChange={this.setTargetChange.bind(this)}/>
+                    onChange={this.setExternalChange.bind(this)}/>
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"allow external links"}</label></div>
         <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
         <h3 style={{color: '#EEEEEE'}}>{"Now select your desired edge weights"}</h3>
@@ -207,7 +211,7 @@ export class Graph extends React.Component {
       var text = curr[0];
       if (!seenNodes.has(text)) {
         var color = first ? '#00FF00' : "#ee7125";
-        if (color == '##ee7125' && text.substring(0, 5) == 'http') {
+        if (color == '##ee7125' && text.substring(0, 4) == 'http') {
           color = "#0000FF";
         }
         if (searchNodes != null && searchNodes.indexOf(text) >= 0) {
@@ -234,7 +238,7 @@ export class Graph extends React.Component {
         var e = edges[i];
         if (!seenNodes.has(e[0])) {
           var color = "#ee7125";
-          if (e[0].substring(0, 5) == 'http') {
+          if (e[0].substring(0, 4) == 'http') {
             color = "#0000FF";
           }
           if (searchNodes != null && searchNodes.indexOf(e[0]) >= 0) {
