@@ -57,6 +57,10 @@ export class ConfigPanel extends React.Component {
     this.setState({filter: e.target.value});
   }
 
+  setExternalChange(e) {
+    this.setState({external: e.target.value});
+  }
+
   render() {
     return (
       <div style={{backgroundColor: "#4a4a4a", padding: '10px'}}>
@@ -74,6 +78,9 @@ export class ConfigPanel extends React.Component {
                     onChange={this.setTargetChange.bind(this)}/>
           <label style={{color: '#DDDDDD', padding: '5px'}}>{"target url"}</label></div>
         <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
+        <div><input type="checkbox" value={this.state.target} style={{width: "15px"}} 
+                    onChange={this.setExternalChange.bind(this)}/>
+          <label style={{color: '#DDDDDD', padding: '5px'}}>{"allow external links"}</label></div>
         <h3 style={{color: '#EEEEEE'}}>{"Now select your desired edge weights"}</h3>
         <form>
             <input type="radio" name="filter" value="none" checked={this.state.filter=='none'}
@@ -85,7 +92,7 @@ export class ConfigPanel extends React.Component {
           </form>
           <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
         <button onClick={this.handle.bind(this)}>Update</button>
-        <div style={{display: 'flex', justifyContent: 'center', padding: '50px'}}></div>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '30px'}}></div>
         <h4 style={{color: '#AAAA00'}}>{this.state.loadingMessage}</h4>
       </div>
     )
