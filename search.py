@@ -55,6 +55,7 @@ def search(start, finish):
         if node not in visited and node in jsonDict.keys():
             visited.append(node)
             for successor, stepCost in jsonDict[node]:
+                stepCost[0] = 10 - stepCost[0] #hack because we want the biggest weights to be preferred in
                 if not visited.__contains__(successor):
                     newPath = path[:]
                     newPath.append(successor)
@@ -68,5 +69,5 @@ def search(start, finish):
 
 
 if __name__ == "__main__":
-    print search("http://hytechracing.gatech.edu", "/images/adopt-a-cell/Batteries_Rendering.jpg")
+    print search("http://hytechracing.gatech.edu", "/contact")
 
