@@ -8,6 +8,7 @@ import 'whatwg-fetch';
 import header_bg from './images/header_bg.jpg';
 
 export class Header extends React.Component {
+
   render() {
     return (
       <div style={{
@@ -19,10 +20,39 @@ export class Header extends React.Component {
 }
 
 export class ConfigPanel extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {url: "https://homedepot.com/", 
+      limit: 1000,
+      handler: props.updateHandler,
+      ref: props.reference};
+  }
+
+  handle() {
+    this.state.handler.call(this.state.ref, this.state.url, this.state.limit);
+  }
+
+  setUrlChange(e) {
+    this.setState({url: e.target.value});
+  }
+
+  setLimitChange(e) {
+    this.setState({limit: e.target.value});
+  }
+
   render() {
     return (
-      <div style={{backgroundColor: "#4a4a4a"}}>
-        <h1>Config Panel Goes Here</h1>
+      <div style={{backgroundColor: "#4a4a4a", padding: '10px'}}>
+        <h3 style={{color: '#EEEEEE'}}>{"Enter a valid url to get started"}</h3>
+        <div><input type="text" value={this.state.url} style={{width: "150px"}} 
+                    onChange={this.setUrlChange.bind(this)}/>
+          <label style={{color: '#DDDDDD', padding: '5px'}}>{"url"}</label></div>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}></div>
+        <div><input type="number" value={this.state.limit} style={{width: "150px"}} 
+                    onChange={this.setLimitChange.bind(this)}/>
+          <label style={{color: '#DDDDDD', padding: '5px'}}>{"# of edges"}</label></div>
+        <div style={{display: 'flex', justifyContent: 'center', padding: '20px'}}>
+        <button onClick={this.handle.bind(this)}>Update</button></div>
       </div>
     )
   }
@@ -50,6 +80,7 @@ export class Graph extends React.Component {
       // }
       // ctx.fillText(str, x, y - (r * 3));
     }
+
     this.state = {
       customNodeCanvas: customNodeCanvas,
       textSize: textSize,
@@ -57,20 +88,25 @@ export class Graph extends React.Component {
     };
   }
 
-  componentDidMount() {
+  changeUrl = function(url, limit) {
+    console.log(this);
     var linksMap = {};
-      fetch('http://localhost:5000/map?url=https://homedepot.com/&limit=100', {
-        method: 'GET',
-        'Content-Type': 'application/json'
-      })
-      .then(response => response.json())
-      .then(response => {
-        var processed = this.readInGraph(response, linksMap);
-        this.setState({
-          graph: processed, 
-          dataLoaded: true, 
-          linksMap: linksMap,});
-      });
+    fetch('http://localhost:5000/map?url=' + url + '&limit=' + limit, {
+      method: 'GET',
+      'Content-Type': 'application/json'
+    })
+    .then(response => response.json())
+    .then(response => {
+      var processed = this.readInGraph(response, linksMap);
+      this.setState({
+        graph: processed, 
+        dataLoaded: true, 
+        linksMap: linksMap,});
+    });
+  }
+
+  componentDidMount() {
+    this.changeUrl('https://homedepot.com/', 1000);
   }
 
   convertLinkToKey(source, target) {
@@ -145,7 +181,9 @@ export class Graph extends React.Component {
     <div className="App">
       <Header />
       <div style={{display:"flex", flexDirection: "row"}}> 
-        <ConfigPanel />
+        <ConfigPanel 
+          updateHandler={this.changeUrl}
+          reference={this}/>
         <ForceGraph2D
           width={1000}
           graphData={this.state.graph}
@@ -155,11 +193,11 @@ export class Graph extends React.Component {
           nodeVal={3}
           nodeCanvasObject={this.state.customNodeCanvas}
           cooldownTicks={0}
-          warmupTicks={100}
+          warmupTicks={150}
           linkDirectionalParticles={0}
           linkWidth={(l) => this.getLinkWidth(l)}
           />
-        </div>
+      </div>);
     </div>);
   }
 };
